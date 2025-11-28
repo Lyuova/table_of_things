@@ -252,8 +252,7 @@ on.
         let items = parseRawText(rawInput); 
  
         if (items.length === 0) { 
-            errorDiv.textContent = "Не удалось распознать данные. Проверьте формат 
-текста."; 
+            errorDiv.textContent = "Не удалось распознать данные. Проверьте формат текста."; 
             errorDiv.style.display = 'block'; 
             return; 
         } 
@@ -264,8 +263,7 @@ on.
         const sortMode = document.getElementById('sortSelect').value; 
  
         const customColInputs = document.querySelectorAll('.custom-col-name'); 
-        const customColumns = Array.from(customColInputs).map(i => i.value).filter(v => 
-v.trim() !== ""); 
+        const customColumns = Array.from(customColInputs).map(i => i.value).filter(v => v.trim() !== ""); 
  
         if (sortMode !== 'none') { 
             items.sort((a, b) => { 
