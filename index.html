@@ -300,7 +300,7 @@
             const mergedMap = new Map();
             items.forEach(item => {
                 // Key for merging: BotID + ItemID + Uses string
-                const key = ${item.botId}_${item.itemId}_${item.uses};
+                const key = `${item.botId}_${item.itemId}_${item.uses}`;
                 if (mergedMap.has(key)) {
                     const existing = mergedMap.get(key);
                     existing.count += 1;
