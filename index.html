@@ -121,6 +121,13 @@
         <textarea id="resultText" readonly></textarea>
     </div>
 </div>
+    
+            <div id="output">
+        <label for="resultText">Результат (BBCode):</label>
+        <button id="copyBtn" onclick="copyResult()" class="secondary" style="margin-left: 10px;">Копировать</button>
+        <textarea id="resultText" readonly></textarea>
+    </div>
+</div>
 <script>
     // Logic handles
     const mergeCheckbox = document.getElementById('mergeDuplicates');
@@ -294,13 +301,6 @@
         bb += "[/table]";
         return bb;
     }
-
-            <div id="output">
-        <label for="resultText">Результат (BBCode):</label>
-        <button id="copyBtn" onclick="copyResult()" class="secondary" style="margin-left: 10px;">Копировать</button>
-        <textarea id="resultText" readonly></textarea>
-    </div>
-</div>
 
             function copyResult() {
         const copyText = document.getElementById("resultText");
