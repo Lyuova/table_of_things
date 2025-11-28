@@ -92,10 +92,8 @@ margin-left: 5px;}
  
     <div class="controls"> 
         <div class="control-group flex"> 
-            <label><input type="checkbox" id="splitBuffs"> Баффы и уникальные 
-отдельно</label> 
-            <label><input type="checkbox" id="mergeDuplicates"> Объединить одинаковые 
-(добавит "Кол-во")</label> 
+            <label><input type="checkbox" id="splitBuffs"> Баффы и уникальные отдельно</label> 
+            <label><input type="checkbox" id="mergeDuplicates"> Объединить одинаковые (добавит "Кол-во")</label> 
             <label><input type="checkbox" id="showUniqueId"> Добавить колонку UID</label> 
         </div> 
  
@@ -113,8 +111,7 @@ margin-left: 5px;}
         <div class="control-group"> 
             <label>Дополнительные колонки:</label> 
             <div id="customColumnsList"></div> 
-            <button type="button" class="secondary" onclick="addCustomColumn()">+ 
-Добавить колонку</button> 
+            <button type="button" class="secondary" onclick="addCustomColumn()">+ Добавить колонку</button> 
         </div> 
     </div> 
  
@@ -133,8 +130,7 @@ margin-left: 5px;}
     const mergeCheckbox = document.getElementById('mergeDuplicates'); 
     const uniqueIdCheckbox = document.getElementById('showUniqueId'); 
  
-    // Prevent conflict: Merging removes Unique ID logic, so disable Unique ID if Merging is 
-on. 
+    // Prevent conflict: Merging removes Unique ID logic, so disable Unique ID if Merging is on. 
     mergeCheckbox.addEventListener('change', () => { 
         if(mergeCheckbox.checked) { 
             uniqueIdCheckbox.checked = false; 
