@@ -210,6 +210,102 @@
                                 // But wait, some items might just be "Item (ID) - 1/5" without parens? 
                                 // Prompt examples use parens for uses: "61403350 (4/5)".
                                 // Let's assume if it's just digits, it's a unique ID, otherwise text.
+                                if (/^\d+$/.test(remainder)) {
+                                    uniqueId = remainder;
+                                } else {
+                                    // Fallback text
+                                    uses = remainder; 
+                                }
+                            }
+                        }
+                    } else {
+                         // No dash part. Example: "веселье в шляпе (2539)"
+                         // Prompt says uses optional. Let's leave uses empty or "не имеет" based on context.
+                         // But usually if undefined, it's a standard item. Let's keep it empty or standard?
+                         // Prompt example: "веселье в шляпе" -> no uses info.
+                         uses = ""; 
+                    }
+
+                    items.push({
+                        botName: currentBotName,
+                        botId: currentBotId,
+                        itemName: itemName,
+                        itemId: itemId,
+                        uniqueId: uniqueId,
+                        uses: uses,
+                        count: 1 // For merging later
+                    });
+                } 
+            }
+        }
+        
+        return items;
+    }
+
+    function isBuff(id) {
+        return (id >= 5695 && id <= 5714) || (id >= 5715 && id <= 5734);
+    }
+
+    function processText() {
+        const errorDiv = document.getElementById('errorMessage');
+        const outputText = document.getElementById('resultText');
+        const rawInput = document.getElementById('inputText').value;
+
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+        outputText.value = '';
+
+        if (!rawInput.trim()) {
+            errorDiv.textContent = "Поле ввода пустое.";
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        let items = parseRawText(rawInput);
+
+        if (items.length === 0) {
+            errorDiv.textContent = "Не удалось распознать данные. Проверьте формат текста (В боте X (ID=Y)... Предмет (ID)...).";
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        const shouldSplit = document.getElementById('splitBuffs').checked;
+        const shouldMerge = document.getElementById('mergeDuplicates').checked;
+        const shouldShowUid = document.getElementById('showUniqueId').checked;
+        const sortMode = document.getElementById('sortSelect').value;
+
+        // Custom columns
+        const customColInputs = document.querySelectorAll('.custom-col-name');
+        const customColumns = Array.from(customColInputs).map(i => i.value).filter(v => v.trim() !== "");
+
+        // Sorting
+        if (sortMode !== 'none') {
+            items.sort((a, b) => {
+                if (sortMode === 'botAsc') {
+                    if (a.botId !== b.botId) return a.botId - b.botId;
+                    return a.itemId - b.itemId;
+                }
+                if (sortMode === 'botDesc') {
+                    if (a.botId !== b.botId) return b.botId - a.botId;
+                    return a.itemId - b.itemId;
+                }
+                if (sortMode === 'itemAsc') return a.itemId - b.itemId;
+                if (sortMode === 'itemDesc') return b.itemId - a.itemId;
+                return 0;
+            });
+        }
+
+        // Merging logic
+        if (shouldMerge) {
+            const mergedMap = new Map();
+            items.forEach(item => {
+                // Key for merging: BotID + ItemID + Uses string
+                const key = ${item.botId}_${item.itemId}_${item.uses};
+                if (mergedMap.has(key)) {
+                    const existing = mergedMap.get(key);
+                    existing.count += 1;
+                } else {
+                    // Clone item to avoid reference issues
                           const newItem = {...item};
                     newItem.uniqueId = null; // Remove unique ID when merging
                     mergedMap.set(key, newItem);
