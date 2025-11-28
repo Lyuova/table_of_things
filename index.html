@@ -91,9 +91,9 @@
 
     <div class="controls">
         <div class="control-group flex">
-            <label><input type="checkbox" id="splitBuffs"> Баффы и уникальные отдельно</label>
+            <label><input type="checkbox" id="splitBuffs"> Баффы и уникальные предметы отдельно</label>
             <label><input type="checkbox" id="mergeDuplicates"> Объединить одинаковые (добавит "Кол-во")</label>
-            <label><input type="checkbox" id="showUniqueId"> Добавить колонку UID</label>
+            <label><input type="checkbox" id="showUniqueId"> Добавить колонку с уникальными айди</label>
         </div>
 
         <div class="control-group">
@@ -293,6 +293,30 @@
 
         bb += "[/table]";
         return bb;
+    }
+
+            <div id="output">
+        <label for="resultText">Результат (BBCode):</label>
+        <button id="copyBtn" onclick="copyResult()" class="secondary" style="margin-left: 10px;">Копировать</button>
+        <textarea id="resultText" readonly></textarea>
+    </div>
+</div>
+
+            function copyResult() {
+        const copyText = document.getElementById("resultText");
+        const btn = document.getElementById("copyBtn");
+        
+        if (!copyText.value) return; // Не копировать, если пусто
+
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // Для мобильных устройств
+
+        navigator.clipboard.writeText(copyText.value).then(() => {
+            // Визуальное подтверждение
+            const originalText = btn.textContent;
+            btn.textContent = "Скопировано!";
+            setTimeout(() => btn.textContent = originalText, 2000);
+        });
     }
 </script>
 
