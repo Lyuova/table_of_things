@@ -3,112 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Генератор таблицы предметов (CatWar)</title>
+    <title>CW Table Generator</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; color: #333; }
-        .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { margin-top: 0; }
-        label { display: inline-block; margin-bottom: 5px; cursor: pointer; }
-        textarea { width: 100%; height: 150px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; padding: 10px; font-family: monospace; resize: vertical; }
-        .controls { margin: 15px 0; padding: 15px; background: #f9f9f9; border: 1px solid #eee; border-radius: 4px; }
-        .control-group { margin-bottom: 10px; }
-        .control-group.flex { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
-        .mode-switch { background: #e3f2fd; padding: 10px; border-radius: 4px; border: 1px solid #90caf9; margin-bottom: 15px; }
-        button { background-color: #4CAF50; color: white; border: none; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }
-        button:hover { background-color: #45a049; }
-        button.secondary { background-color: #008CBA; font-size: 14px; padding: 5px 10px; }
-        button.remove { background-color: #f44336; font-size: 12px; padding: 2px 6px; margin-left: 5px;}
-        .error { color: #d32f2f; background: #ffcdd2; padding: 10px; border-radius: 4px; margin-bottom: 15px; display: none; }
-        #customColumnsList input { padding: 5px; margin-right: 5px; margin-bottom: 5px; width: 150px; }
-        #output { margin-top: 20px; }
-        .helper-text { font-size: 0.9em; color: #666; margin-top: -5px; margin-bottom: 10px; display: block; }
+        :root {
+            /* Palette from screenshot */
+            --seagull: #6DCFED;       /* Accent */
+            --ebb: #EDE2E1;           /* Light Bg */
+            --swiss-coffee: #DBD3D3;  /* Light Secondary */
+            --eerie-black: #242323;   /* Dark Bg */
+            --dune: #363334;          /* Dark Secondary */
+            
+            /* Default Light Theme Variables */
+            --bg-color: var(--ebb);
+            --surface-color: #ffffff;
+            --border-color: var(--swiss-coffee);
+            --text-color: var(--eerie-black);
+            --text-secondary: #666;
+            --accent-color: var(--seagull);
+            --accent-hover: #5bbbd6;
+            --input-bg: #fafafa;
+            --shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: var(--eerie-black);
+            --surface-color: var(--dune);
+            --border-color: #4a4a4a;
+            --text-color: var(--ebb);
+            --text-secondary: #aaa;
+            --accent-color: var(--seagull);
+            --accent-hover: #5bbbd6;
+            --input-bg: #2a2a2a;
+            --shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--surface-color);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s;
+        }
+
+        /* Header & Toggle */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h2 { margin: 0; font-weight: 600; }
+
+        .theme-toggle {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .theme-toggle:hover { background-color: var(--border-color); }
+
+        /* Inputs */
+        label { display: block; margin-bottom: 8px; font-weight: 500; }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            font-family: monospace;
+            resize: vertical;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        textarea:focus { border-color: var(--accent-color); }
+
+        /* Controls Area */
+        .controls {
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--bg-color); /* Slightly different from surface */
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .control-group { margin-bottom: 15px; }
+        .control-group:last-child { margin-bottom: 0; }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            user-select: none;
+        }
+        .checkbox-label input { margin-right: 8px; accent-color: var(--accent-color); }
+
+        select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--accent-color);
+            color: #000; /* Seagull is bright, black text is better */
+            border: none;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        .btn.secondary {
+            background-color: var(--border-color);
+            color: var(--text-color);
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+        .btn.remove {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 4px 8px;
+            margin-left: 5px;
+            border-radius: 4px;
+        }
+
+        /* Custom Columns */
+        #customColumnsList { display: inline-flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; }
+        #customColumnsList div { display: flex; align-items: center; }
+        .custom-col-name {
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            width: 120px;
+        }
+
+        /* Output Area */
+        #output { margin-top: 25px; border-top: 2px solid var(--border-color); padding-top: 20px; }
+        .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+        .error {
+            color: #d32f2f;
+            background: #ffcdd2;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 5px solid #d32f2f;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Парсер предметов</h2>
+    <div class="header-row">
+        <h2>Парсер предметов</h2>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span id="themeIcon">🌙</span> <span id="themeText">Темная</span>
+        </button>
+    </div>
     
     <div id="errorMessage" class="error"></div>
 
-    <div class="mode-switch">
-        <strong>Режим ввода:</strong>
-        <label style="margin-left: 10px;"><input type="radio" name="inputMode" value="bot" checked onclick="toggleMode()"> Текст из бота</label>
-        <label style="margin-left: 10px;"><input type="radio" name="inputMode" value="smart" onclick="toggleMode()"> Умный список (База)</label>
-    </div>
-
-    <label for="inputText" id="inputLabel">Вставьте текст из бота:</label>
-    <span id="helperText" class="helper-text">Пример: В боте Бот1 (ID=1)...</span>
-    <textarea id="inputText" placeholder=""></textarea>
-
-    <div id="smartBotInput" style="display:none; margin-top: 10px;">
-        <label>Имя бота: <input type="text" id="manualBotName" value="Мой Бот"></label>
-        <label style="margin-left: 10px;">ID бота: <input type="number" id="manualBotId" value="0"></label>
-    </div>
+    <label for="inputText">Вставьте текст из бота:</label>
+    <textarea id="inputText" placeholder="Вставьте сюда текст сообщения. Лишний текст до и после игнорируется."></textarea>
 
     <div class="controls">
-        <div class="control-group flex">
-            <label><input type="checkbox" id="splitBuffs"> Баффы и уникальные отдельно</label>
-            <label><input type="checkbox" id="mergeDuplicates"> Объединить одинаковые (добавит "Кол-во")</label>
-            <label><input type="checkbox" id="showUniqueId"> Добавить колонку UID</label>
+        <div class="control-group checkbox-group">
+            <label class="checkbox-label"><input type="checkbox" id="splitBuffs"> Баффы отдельно</label>
+            <label class="checkbox-label"><input type="checkbox" id="mergeDuplicates"> Объединить (счетчик)</label>
+            <label class="checkbox-label"><input type="checkbox" id="showUniqueId"> Колонка UID</label>
         </div>
 
         <div class="control-group">
-            <label for="sortSelect">Сортировка:</label>
+            <label for="sortSelect" style="display:inline-block; margin-right: 10px;">Сортировка:</label>
             <select id="sortSelect">
                 <option value="none">Как в сообщении</option>
-                <option value="botAsc">ID Бота (возрастание)</option>
-                <option value="botDesc">ID Бота (убывание)</option>
-                <option value="itemAsc">ID Предмета (возрастание)</option>
-                <option value="itemDesc">ID Предмета (убывание)</option>
+                <option value="botAsc">ID Бота (возр)</option>
+                <option value="botDesc">ID Бота (убыв)</option>
+                <option value="itemAsc">ID Предмета (возр)</option>
+                <option value="itemDesc">ID Предмета (убыв)</option>
             </select>
         </div>
 
         <div class="control-group">
             <label>Дополнительные колонки:</label>
             <div id="customColumnsList"></div>
-            <button type="button" class="secondary" onclick="addCustomColumn()">+ Добавить колонку</button>
+            <button type="button" class="btn secondary" onclick="addCustomColumn()">+ Добавить</button>
         </div>
     </div>
 
-    <button onclick="processText()">Сгенерировать таблицу</button>
+    <button class="btn" onclick="processText()">Сгенерировать таблицу</button>
 
     <div id="output">
-        <label for="resultText">Результат (BBCode):</label>
-        <button id="copyBtn" onclick="copyResult()" class="secondary" style="margin-left: 10px;">Копировать</button>
+        <div class="output-header">
+            <label for="resultText" style="margin:0;">Результат (BBCode):</label>
+            <button id="copyBtn" onclick="copyResult()" class="btn secondary">Копировать</button>
+        </div>
         <textarea id="resultText" readonly></textarea>
     </div>
 </div>
 
 <script>
-    // ==========================================
-    // БАЗА ДАННЫХ ПРЕДМЕТОВ (ID и НАЗВАНИЯ)
-    // ==========================================
-    // Чтобы добавить предмет, просто впишите новую строку:
-    // "название": ID,
-    // "сокращение": ID,
-    const itemDatabase = {
-        // --- Известные баффы ---
-        "бурундучонок": 5713, "бурундук": 5713, "бур": 5713,
-        "котёнок каракала": 5706, "каракал": 5706, "кот каракала": 5706,
-        "лягушонок": 5715, "лягушка": 5715,
-        "маленькая мышка соня": 5720, "мышка соня": 5720, "соня": 5720,
-        "эублефарёнок": 5734, "эублефар": 5734, "геккон": 5734, 
+    // --- Theme Logic ---
+    function toggleTheme() {
+        const body = document.body;
+        const currentTheme = body.getAttribute('data-theme');
+        const icon = document.getElementById('themeIcon');
+        const text = document.getElementById('themeText');
         
-        // --- ДРУГИЕ (Сюда можно добавлять остальные) ---
-        // Пример добавления (уберите // в начале строки, когда узнаете ID):
-        // "бельчонок": 57XX, 
-        // "лисёнок": 57XX,
+        if (currentTheme === 'dark') {
+            body.setAttribute('data-theme', 'light');
+            icon.textContent = '🌙';
+            text.textContent = 'Темная';
+        } else {
+            body.setAttribute('data-theme', 'dark');
+            icon.textContent = '☀️';
+            text.textContent = 'Светлая';
+        }
+    }
 
-        // --- Обычные предметы (примеры) ---
-        "веселье в шляпе": 2539, "веселье": 2539,
-        "леденец транзакции": 1231, "леденец": 1231,
-        "тёмная душа": 9389, "тд": 9389
-    };
+    // Set default based on system preference or default to light
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        toggleTheme(); // Switch to dark initially if system is dark
+    }
 
-    // ==========================================
-    // ЛОГИКА
-    // ==========================================
+    // --- Parser Logic ---
     const mergeCheckbox = document.getElementById('mergeDuplicates');
     const uniqueIdCheckbox = document.getElementById('showUniqueId');
 
@@ -121,39 +286,18 @@
         }
     });
 
-    function toggleMode() {
-        const mode = document.querySelector('input[name="inputMode"]:checked').value;
-        const label = document.getElementById('inputLabel');
-        const helper = document.getElementById('helperText');
-        const smartInput = document.getElementById('smartBotInput');
-        const area = document.getElementById('inputText');
-
-        if (mode === 'bot') {
-            label.textContent = "Вставьте текст из бота:";
-            helper.textContent = "Пример: В боте Бот1 (ID=1)...";
-            area.placeholder = "В боте Бот1 (ID=123) удалось найти...";
-            smartInput.style.display = 'none';
-        } else {
-            label.textContent = "Введите список предметов (каждый с новой строки):";
-            helper.textContent = "Формат: Название (или сокращение) [количество]";
-            area.placeholder = "бурундук 5\nкаракал\nвеселье\nтд 10";
-            smartInput.style.display = 'block';
-        }
-    }
-
     function addCustomColumn() {
         const container = document.getElementById('customColumnsList');
         const wrapper = document.createElement('div');
-        wrapper.style.display = 'inline-block';
         
         const input = document.createElement('input');
         input.type = 'text';
-        input.placeholder = 'Название колонки';
+        input.placeholder = 'Название';
         input.className = 'custom-col-name';
         
         const btn = document.createElement('button');
         btn.textContent = 'x';
-        btn.className = 'remove';
+        btn.className = 'btn remove';
         btn.onclick = function() { container.removeChild(wrapper); };
 
         wrapper.appendChild(input);
@@ -161,53 +305,104 @@
         container.appendChild(wrapper);
     }
 
-    // 1. Парсер оригинального текста (из бота)
     function parseRawText(text) {
-        const lines = text.split('\n');
+        // 1. Split text into chunks starting with "В боте" (ignoring case and suffix)
+        // This regex looks for "В боте" or "В боте-хранителе" followed by text
+        const botChunks = text.split(/(?=В боте(?:-хранителе)? )/i);
         const items = [];
-        let currentBotName = null;
-        let currentBotId = null;
-        const botRegex = /В боте (.+) \(ID=(\d+)\) удалось найти следующие предметы:/;
-        const itemBaseRegex = /^(.+?) \((\d+)\)(?:\s*-\s*(.*))?$/; 
 
-        for (let line of lines) {
-            line = line.trim();
-            if (!line) continue;
-            const botMatch = line.match(botRegex);
-            if (botMatch) {
-                currentBotName = botMatch[1].trim();
-                currentBotId = parseInt(botMatch[2], 10);
-                continue;
-            }
-            if (currentBotName !== null) {
-                const itemMatch = line.match(itemBaseRegex);
-                if (itemMatch) {
-                    const itemName = itemMatch[1].trim();
-                    const itemId = parseInt(itemMatch[2], 10);
-                    let remainder = itemMatch[3] ? itemMatch[3].trim() : "";
-                    let uniqueId = null;
-                    let uses = "не имеет использований";
+        // Regex to identify the Bot Header line
+        // Handles "В боте Name (ID=...)" and "В боте-хранителе Name (ID=...)"
+        const botRegex = /В боте(?:-хранителе)?\s+(.+?)\s+\(ID=(\d+)\)/i;
 
-                    if (remainder) {
-                        if (remainder === "не имеет использований") {
-                            uses = "не имеет использований";
-                        } else {
-                            const usesMatch = remainder.match(/\((\d+\/\d+)\)/);
-                            if (usesMatch) {
-                                uses = usesMatch[1];
-                                const preUses = remainder.split('(')[0].trim();
-                                if (preUses) uniqueId = preUses;
+        // Regexes for Items (Tried in order)
+        // Format 1 (Image 2): Name (ID) (UID) (Uses)
+        const itemRegexMultiParen = /^(.+?)\s*\((\d+)\)\s*\((\d+)\)\s*\((.+?)\)/;
+        
+        // Format 2 (Image 1): Name (ID, UID Uses) OR (ID, UID, Uses)
+        // Matches "Name (123, 456 1/5)"
+        const itemRegexCommaParen = /^(.+?)\s*\((\d+),\s*(\d+)[,\s]+(.+?)\)/;
+
+        // Format 3 (Old/Standard): Name (ID) - Info OR Name (ID)
+        const itemRegexStandard = /^(.+?)\s*\((\d+)\)(?:\s*-\s*(.*))?$/;
+
+        for (let chunk of botChunks) {
+            const lines = chunk.trim().split('\n');
+            if (lines.length === 0) continue;
+
+            // Check if this chunk actually starts with a bot line
+            const botMatch = lines[0].match(botRegex);
+            if (!botMatch) continue; // Skip random text chunks that don't look like bot headers
+
+            const currentBotName = botMatch[1].trim();
+            const currentBotId = parseInt(botMatch[2], 10);
+
+            // Process remaining lines in this chunk
+            for (let i = 1; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (!line) continue;
+                // Stop processing items if we hit another "В боте" (should be handled by outer split, but safety first)
+                if (line.toLowerCase().startsWith('в боте')) break;
+
+                let itemName, itemId, uniqueId = null, uses = "не имеет использований";
+                let matched = false;
+
+                // Try Format 1: (ID) (UID) (Uses)
+                let match = line.match(itemRegexMultiParen);
+                if (match) {
+                    itemName = match[1].trim();
+                    itemId = parseInt(match[2], 10);
+                    uniqueId = match[3];
+                    uses = match[4];
+                    matched = true;
+                }
+
+                // Try Format 2: (ID, UID Uses)
+                if (!matched) {
+                    match = line.match(itemRegexCommaParen);
+                    if (match) {
+                        itemName = match[1].trim();
+                        itemId = parseInt(match[2], 10);
+                        uniqueId = match[3];
+                        uses = match[4];
+                        matched = true;
+                    }
+                }
+
+                // Try Format 3: Standard (ID) - ...
+                if (!matched) {
+                    match = line.match(itemRegexStandard);
+                    if (match) {
+                        itemName = match[1].trim();
+                        itemId = parseInt(match[2], 10);
+                        let remainder = match[3] ? match[3].trim() : "";
+                        
+                        if (remainder) {
+                            if (remainder === "не имеет использований") {
+                                uses = "не имеет использований";
                             } else {
-                                if (/^\d+$/.test(remainder)) {
-                                    uniqueId = remainder;
+                                const usesMatch = remainder.match(/\((\d+\/\d+)\)/);
+                                if (usesMatch) {
+                                    uses = usesMatch[1];
+                                    const preUses = remainder.split('(')[0].trim();
+                                    if (preUses) uniqueId = preUses;
                                 } else {
-                                    uses = remainder; 
+                                    if (/^\d+$/.test(remainder)) {
+                                        uniqueId = remainder;
+                                    } else {
+                                        uses = remainder; 
+                                    }
                                 }
                             }
+                        } else {
+                            uses = ""; // Simple item with no uses
                         }
-                    } else { uses = ""; }
+                        matched = true;
+                    }
+                }
 
-                    items.push({
+                if (matched) {
+                     items.push({
                         botName: currentBotName,
                         botId: currentBotId,
                         itemName: itemName,
@@ -216,72 +411,7 @@
                         uses: uses,
                         count: 1
                     });
-                } 
-            }
-        }
-        return items;
-    }
-
-    // 2. Парсер "Умного списка" (через Базу)
-    function parseSmartList(text) {
-        const lines = text.split('\n');
-        const items = [];
-        
-        // Берем данные бота из полей ввода
-        const botName = document.getElementById('manualBotName').value.trim() || "Бот";
-        const botId = document.getElementById('manualBotId').value.trim() || "0";
-
-        for (let line of lines) {
-            line = line.trim().toLowerCase();
-            if (!line) continue;
-
-            // Пытаемся найти количество в конце строки (например "бурундук 5")
-            // Ищем цифры в конце строки
-            let count = 1;
-            let namePart = line;
-            
-            // Регулярка: Название пробел цифры
-            const countMatch = line.match(/^(.*)\s+(\d+)$/);
-            if (countMatch) {
-                namePart = countMatch[1].trim();
-                count = parseInt(countMatch[2], 10);
-            }
-
-            // Ищем ID в базе
-            // Сначала пробуем прямое совпадение
-            let foundId = itemDatabase[namePart];
-
-            if (foundId) {
-                // Ищем "красивое" имя (ключ) для этого ID в базе, чтобы не писать "бур" в таблицу, а "бурундучонок"
-                // Но база простая, поэтому возьмем то, что ввел пользователь, или первую запись с таким ID?
-                // Лучше возьмем то, что ввел пользователь, но с правильным регистром (хотя мы lowercased).
-                // Давайте просто сделаем первую букву заглавной.
-                
-                let displayName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-
-                items.push({
-                    botName: botName,
-                    botId: botId,
-                    itemName: displayName,
-                    itemId: foundId,
-                    uniqueId: null, // В умном режиме UID нет, так как это база
-                    uses: "", // Использования не знаем
-                    count: count
-                });
-            } else {
-                // Если не нашли в базе
-                // Можно добавить обработку ошибки или пропустить
-                console.warn(`Предмет "${namePart}" не найден в базе.`);
-                // Добавляем как есть с ID 0 или пометкой? 
-                // Лучше пропустить или добавить с заглушкой
-                items.push({
-                    botName: botName,
-                    botId: botId,
-                    itemName: namePart + " [НЕ НАЙДЕН ID]",
-                    itemId: 0,
-                    uses: "",
-                    count: count
-                });
+                }
             }
         }
         return items;
@@ -295,7 +425,6 @@
         const errorDiv = document.getElementById('errorMessage');
         const outputText = document.getElementById('resultText');
         const rawInput = document.getElementById('inputText').value;
-        const mode = document.querySelector('input[name="inputMode"]:checked').value;
 
         errorDiv.style.display = 'none';
         errorDiv.textContent = '';
@@ -307,15 +436,9 @@
             return;
         }
 
-        let items = [];
-        if (mode === 'bot') {
-            items = parseRawText(rawInput);
-        } else {
-            items = parseSmartList(rawInput);
-        }
-
+        let items = parseRawText(rawInput);
         if (items.length === 0) {
-            errorDiv.textContent = "Не удалось распознать данные. Проверьте формат.";
+            errorDiv.textContent = "Не удалось распознать данные. Проверьте формат текста.";
             errorDiv.style.display = 'block';
             return;
         }
@@ -327,15 +450,14 @@
         const customColInputs = document.querySelectorAll('.custom-col-name');
         const customColumns = Array.from(customColInputs).map(i => i.value).filter(v => v.trim() !== "");
 
-        // Сортировка
         if (sortMode !== 'none') {
             items.sort((a, b) => {
                 if (sortMode === 'botAsc') {
-                    if (a.botId != b.botId) return a.botId - b.botId; // != allows string/int compare
+                    if (a.botId !== b.botId) return a.botId - b.botId;
                     return a.itemId - b.itemId;
                 }
                 if (sortMode === 'botDesc') {
-                    if (a.botId != b.botId) return b.botId - a.botId;
+                    if (a.botId !== b.botId) return b.botId - a.botId;
                     return a.itemId - b.itemId;
                 }
                 if (sortMode === 'itemAsc') return a.itemId - b.itemId;
@@ -344,15 +466,12 @@
             });
         }
 
-        // Объединение (если выбрано ИЛИ если это умный режим, где часто пишут кол-во)
-        // В умном режиме мы уже получили count, но могут быть повторы строк.
-        if (shouldMerge || mode === 'smart') {
+        if (shouldMerge) {
             const mergedMap = new Map();
             items.forEach(item => {
-                // Ключ: BotID + ItemID + Uses
                 const key = `${item.botId}_${item.itemId}_${item.uses}`;
                 if (mergedMap.has(key)) {
-                    mergedMap.get(key).count += item.count;
+                    mergedMap.get(key).count += 1;
                 } else {
                     const newItem = {...item};
                     newItem.uniqueId = null;
@@ -367,31 +486,26 @@
             const buffs = items.filter(i => isBuff(i.itemId));
             const others = items.filter(i => !isBuff(i.itemId));
             if (buffs.length > 0) {
-                resultBBCode += "[b]Таблица 1: Баффы[/b]\n" + generateTable(buffs, true, shouldShowUid, customColumns) + "\n\n";
+                resultBBCode += "[b]Таблица 1: Баффы[/b]\n" + generateTable(buffs, shouldMerge, shouldShowUid, customColumns) + "\n\n";
             }
             if (others.length > 0) {
-                resultBBCode += "[b]Таблица 2: Прочие Предметы[/b]\n" + generateTable(others, true, shouldShowUid, customColumns);
+                resultBBCode += "[b]Таблица 2: Прочие Предметы[/b]\n" + generateTable(others, shouldMerge, shouldShowUid, customColumns);
             }
         } else {
-            // Если режим умный, force merge display usually looks better, but keep flag logic
-            resultBBCode += generateTable(items, (shouldMerge || mode === 'smart'), shouldShowUid, customColumns);
+            resultBBCode += generateTable(items, shouldMerge, shouldShowUid, customColumns);
         }
         outputText.value = resultBBCode;
     }
 
     function generateTable(items, isMerged, showUid, customCols) {
         let bb = "[table]\n[tr][td]Бот[/td][td]Изображение[/td][td]Название предмета[/td][td]Использования[/td]";
-        // Колонка количества всегда нужна для умного режима или если выбрано объединение
         if (isMerged) bb += "[td]Количество[/td]";
         if (showUid && !isMerged) bb += "[td]Уникальный ID[/td]";
         customCols.forEach(col => bb += `[td]${col}[/td]`);
         bb += "[/tr]\n";
 
         items.forEach(item => {
-            let imgCode = `[img]cw3/things/${item.itemId}.png[/img]\n${item.itemId}`;
-            if (item.itemId === 0) imgCode = "[color=red]ID?[/color]";
-
-            bb += `[tr][td]${item.botName}\n${item.botId}[/td][td]${imgCode}[/td][td]${item.itemName}[/td][td]${item.uses || ""}[/td]`;
+            bb += `[tr][td]${item.botName}\n${item.botId}[/td][td][img]cw3/things/${item.itemId}.png[/img]\n${item.itemId}[/td][td]${item.itemName}[/td][td]${item.uses || ""}[/td]`;
             if (isMerged) bb += `[td]${item.count}[/td]`;
             if (showUid && !isMerged) bb += `[td]${item.uniqueId || ""}[/td]`;
             customCols.forEach(() => bb += `[td][/td]`);
